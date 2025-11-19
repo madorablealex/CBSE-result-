@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBSE Result Portal</title>
+    <!-- html2pdf library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #004684;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 5px solid #ffc107;
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            background: #ffc107;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+            color: #004684;
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .header-text p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-title {
+            color: #004684;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            flex: 1 1 100%;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .custom-session {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .captcha {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .submit-btn {
+            background: #004684;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            display: block;
+            margin: 20px auto 0;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background: #002f58;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #004684;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-container {
+            display: none;
+            padding: 20px;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #004684;
+        }
+
+        .result-header h2 {
+            color: #004684;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .student-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .student-detail {
+            margin-bottom: 10px;
+        }
+
+        .student-detail p {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .marks-table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .marks-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        .marks-table th {
+            background: #004684;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .marks-table td {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            font-size: 14px;
+        }
+
+        .marks-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .summary {
+            background: #e9f7fe;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #004684;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .print-btn, .download-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .print-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .print-btn:hover {
+            background: #218838;
+        }
+
+        .download-btn {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: #138496;
+        }
+
+        .footer {
+            background: #004684;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .note {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* Print Styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .result-container, .result-container * {
+                visibility: visible;
+            }
+            .result-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 20px;
+                margin: 0;
+            }
+            .action-buttons, .note {
+                display: none;
+            }
+            .student-info, .summary {
+                border: 1px solid #ccc;
+            }
+            .marks-table {
+                border: 1px solid #000;
+            }
+            .marks-table th {
+                background: #004684 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+
+        /* Tablet and larger mobile */
+        @media (min-width: 480px) {
+            .input-group {
+                flex: 1 1 calc(50% - 15px);
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: row;
+                justify-content: center;
+            }
+            
+            .print-btn, .download-btn {
+                width: auto;
+                padding: 12px 25px;
+            }
+        }
+
+        /* Desktop */
+        @media (min-width: 768px) {
+            .header {
+                padding: 20px;
+            }
+            
+            .logo {
+                width: 80px;
+                height: 80px;
+                margin-right: 20px;
+            }
+            
+            .header-text h1 {
+                font-size: 24px;
+            }
+            
+            .header-text p {
+                font-size: 16px;
+            }
+            
+            .form-container {
+                padding: 25px;
+            }
+            
+            .form-title {
+                font-size: 22px;
+            }
+            
+            .form-row {
+                gap: 20px;
+            }
+            
+            .input-group {
+                flex: 1;
+                min-width: 200px;
+            }
+            
+            .submit-btn {
+                width: auto;
+            }
+            
+            .result-container {
+                padding: 30px;
+            }
+            
+            .result-header h2 {
+                font-size: 26px;
+            }
+            
+            .student-info {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .student-detail {
+                flex: 1;
+                min-width: 200px;
+                margin-bottom: 0;
+            }
+            
+            .marks-table {
+                min-width: auto;
+            }
+            
+            .marks-table th, .marks-table td {
+                padding: 12px;
+            }
+        }
+        
+        /* PDF-specific styles */
+        .pdf-container {
+            padding: 30px;
+            background: white;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        
+        .pdf-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #004684;
+            padding-bottom: 15px;
+        }
+        
+        .pdf-header h1 {
+            color: #004684;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .pdf-student-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .pdf-student-detail {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .pdf-student-detail p {
+            margin-bottom: 8px;
+        }
+        
+        .pdf-marks-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .pdf-marks-table th {
+            background: #004684;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .pdf-marks-table td {
+            padding: 12px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .pdf-summary {
+            background: #e9f7fe;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .pdf-summary-item {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .pdf-summary-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #004684;
+        }
+        
+        .pdf-note {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">CBSE<br>INDIA</div>
+            <div class="header-text">
+                <h1>Central Board of Secondary Education</h1>
+                <p>Government of India</p>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="form-title">Enter Your Details</div>
+            <form id="resultForm">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="sessionYear">Session Year</label>
+                        <select id="sessionYear" required onchange="toggleCustomSession()">
+                            <option value="">Select Session Year</option>
+                            <option value="2024-25">2024-25</option>
+                            <option value="2023-24">2023-24</option>
+                            <option value="2022-23">2022-23</option>
+                            <option value="2021-22">2021-22</option>
+                            <option value="2020-21">2020-21</option>
+                            <option value="custom">Custom Session</option>
+                        </select>
+                        <div id="customSessionGroup" class="custom-session">
+                            <input type="text" id="customSession" placeholder="Enter session (e.g., 2024-25)" pattern="\d{4}-\d{2}">
+                            <div class="error-message" id="customSessionError">Please enter a valid session in YYYY-YY format</div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="classSelect">Class</label>
+                        <select id="classSelect" required onchange="toggleStreamSelector()">
+                            <option value="">Select Class</option>
+                            <option value="10">Class X</option>
+                            <option value="12">Class XII</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group" id="streamGroup" style="display: none;">
+                        <label for="streamSelect">Stream</label>
+                        <select id="streamSelect">
+                            <option value="science">Science</option>
+                            <option value="commerce">Commerce</option>
+                            <option value="arts">Arts</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="studentName">Student Name</label>
+                        <input type="text" id="studentName" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="rollno">Roll Number</label>
+                        <input type="text" id="rollno" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="schoolno">School Number</label>
+                        <input type="text" id="schoolno" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="centerno">Center Number</label>
+                        <input type="text" id="centerno" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="admitCardId">Admit Card ID</label>
+                        <input type="text" id="admitCardId" required>
+                    </div>
+                </div>
+
+                <div class="captcha">
+                    <label>Security Pin: <span id="captchaQuestion"></span></label>
+                    <input type="text" id="captchaInput" required>
+                    <div class="error-message" id="captchaError">Invalid Security Pin! Please try again.</div>
+                </div>
+
+                <button type="submit" class="submit-btn">View Result</button>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your request...</p>
+        </div>
+
+        <div class="result-container" id="resultContainer">
+            <div class="result-header">
+                <h2 id="resultClass">Senior School Certificate Examination (Class XII) Result 2024</h2>
+                <p id="resultSession">Session: 2024-25</p>
+            </div>
+
+            <div class="student-info">
+                <div class="student-detail">
+                    <p>Name: <strong id="resultName"></strong></p>
+                    <p>Father's Name: <strong id="resultFatherName"></strong></p>
+                    <p>Mother's Name: <strong id="resultMotherName"></strong></p>
+                </div>
+                <div class="student-detail">
+                    <p>Roll No: <strong id="resultRoll"></strong></p>
+                    <p>School No: <strong id="resultSchool"></strong></p>
+                    <p>Center No: <strong id="resultCenter"></strong></p>
+                </div>
+                <div class="student-detail">
+                    <p>Stream: <strong id="resultStream"></strong></p>
+                    <p>Date of Birth: <strong id="resultDOB"></strong></p>
+                    <p>School: <strong id="resultSchoolName"></strong></p>
+                </div>
+            </div>
+
+            <div class="marks-table-container">
+                <table class="marks-table" id="marksTable">
+                    <!-- Marks table will be generated dynamically -->
+                </table>
+            </div>
+
+            <div class="summary">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div>Total Marks</div>
+                        <div class="summary-value" id="totalMarks">500</div>
+                    </div>
+                    <div class="summary-item">
+                        <div>Marks Obtained</div>
+                        <div class="summary-value" id="obtainedMarks">445</div>
+                    </div>
+                    <div class="summary-item">
+                        <div>Percentage</div>
+                        <div class="summary-value" id="resultPercentage">89.0%</div>
+                    </div>
+                    <div class="summary-item">
+                        <div>Result</div>
+                        <div class="summary-value" id="resultStatus">PASS</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="print-btn" onclick="printResult()">Print Result</button>
+                <button class="download-btn" onclick="downloadPDF()">Download PDF</button>
+            </div>
+
+            <div class="note">
+                * This is a computer generated statement and does not require any signature
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Central Board of Secondary Education. All Rights Reserved.</p>
+        <p>Helpline: 011-22509256-59 | Email: cbsehelpdesk@cbsedelhi.org</p>
+        <p style="margin-top: 10px;">
+            <a href="#" style="color: #ffc107;">Privacy Policy</a> | 
+            <a href="#" style="color: #ffc107;">Terms & Conditions</a>
+        </p>
+    </div>
+
+    <!-- Hidden container for PDF generation -->
+    <div id="pdf-content" style="display: none;"></div>
+
+    <script>
+        let captchaAnswer;
+        let currentResultData = {};
+        
+        // Generate random captcha
+        function generateCaptcha() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            captchaAnswer = num1 + num2;
+            document.getElementById('captchaQuestion').textContent = `${num1} + ${num2} = ?`;
+        }
+
+         // Toggle custom session input
+        function toggleCustomSession() {
+            const sessionSelect = document.getElementById('sessionYear');
+            const customSessionGroup = document.getElementById('customSessionGroup');
+            const customSession = document.getElementById('customSession');
+            
+            if (sessionSelect.value === 'custom') {
+                customSessionGroup.style.display = 'block';
+                customSession.required = true;
+            } else {
+                customSessionGroup.style.display = 'none';
+                customSession.required = false;
+            }
+        }
+
+        // Toggle stream selector based on class
+        function toggleStreamSelector() {
+            const classSelect = document.getElementById('classSelect');
+            const streamGroup = document.getElementById('streamGroup');
+            
+            if (classSelect.value === '12') {
+                streamGroup.style.display = 'block';
+            } else {
+                streamGroup.style.display = 'none';
+            }
+        }
+
+        // Validate session format
+        function validateSession(session) {
+            const sessionPattern = /^\d{4}-\d{2}$/;
+            return sessionPattern.test(session);
+        }
+
+        // Show error message
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Hide error message
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.style.display = 'none';
+        }
+
+        // Generate random data for demonstration
+        function generateRandomData() {
+            const firstNames = ['Rahul', 'Priya', 'Amit', 'Neha', 'Sandeep', 'Anjali', 'Vikram', 'Pooja'];
+            const lastNames = ['Sharma', 'Verma', 'Kumar', 'Singh', 'Patel', 'Yadav', 'Jain', 'Gupta'];
+            const schools = [
+                'Delhi Public School', 'Kendriya Vidyalaya', 'Springdales School', 
+                'Modern School', 'St. Xavier\'s School', 'The Shri Ram School'
+            ];
+            
+            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            const fatherName = firstNames[Math.floor(Math.random() * firstNames.length)] + ' ' + lastName;
+            const motherName = firstNames[Math.floor(Math.random() * firstNames.length)] + ' ' + lastName;
+            const school = schools[Math.floor(Math.random() * schools.length)];
+            
+            // Generate random date of birth (between 2006-2008 for Class 10, 2004-2006 for Class 12)
+            const classSelect = document.getElementById('classSelect');
+            const year = classSelect.value === '10' ? 
+                2006 + Math.floor(Math.random() * 3) : 
+                2004 + Math.floor(Math.random() * 3);
+            const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+            const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+            const dob = `${day}-${month}-${year}`;
+            
+            return {
+                name: `${firstName} ${lastName}`,
+                fatherName: fatherName,
+                motherName: motherName,
+                school: school,
+                dob: dob
+            };
+        }
+
+        // Generate marks based on class and stream
+        function generateMarks(classValue, streamValue) {
+            let subjects = [];
+            
+            if (classValue === '10') {
+                subjects = [
+                    { code: '001', name: 'ENGLISH LANG & LIT.', marks: Math.floor(Math.random() * 21) + 80 },
+                    { code: '002', name: 'HINDI COURSE-A', marks: Math.floor(Math.random() * 21) + 80 },
+                    { code: '041', name: 'MATHEMATICS', marks: Math.floor(Math.random() * 21) + 80 },
+                    { code: '086', name: 'SCIENCE', marks: Math.floor(Math.random() * 21) + 80 },
+                    { code: '087', name: 'SOCIAL SCIENCE', marks: Math.floor(Math.random() * 21) + 80 }
+                ];
+            } else if (classValue === '12') {
+                if (streamValue === 'science') {
+                    subjects = [
+                        { code: '001', name: 'ENGLISH CORE', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '041', name: 'MATHEMATICS', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '042', name: 'PHYSICS', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '043', name: 'CHEMISTRY', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '044', name: 'BIOLOGY', marks: Math.floor(Math.random() * 21) + 80 }
+                    ];
+                } else if (streamValue === 'commerce') {
+                    subjects = [
+                        { code: '001', name: 'ENGLISH CORE', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '028', name: 'ACCOUNTANCY', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '054', name: 'BUSINESS STUDIES', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '030', name: 'ECONOMICS', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '055', name: 'ENTREPRENEURSHIP', marks: Math.floor(Math.random() * 21) + 80 }
+                    ];
+                } else if (streamValue === 'arts') {
+                    subjects = [
+                        { code: '001', name: 'ENGLISH CORE', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '027', name: 'HISTORY', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '028', name: 'POLITICAL SCIENCE', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '029', name: 'GEOGRAPHY', marks: Math.floor(Math.random() * 21) + 80 },
+                        { code: '037', name: 'PSYCHOLOGY', marks: Math.floor(Math.random() * 21) + 80 }
+                    ];
+                }
+            }
+            
+            return subjects;
+        }
+
+        // Calculate grade based on marks
+        function calculateGrade(marks) {
+            if (marks >= 91) return 'A1';
+            if (marks >= 81) return 'A2';
+            if (marks >= 71) return 'B1';
+            if (marks >= 61) return 'B2';
+            if (marks >= 51) return 'C1';
+            if (marks >= 41) return 'C2';
+            if (marks >= 33) return 'D';
+            return 'E';
+        }
+
+        // Form submission handler
+        function handleSubmit(event) {
+            event.preventDefault();
+            
+            // Get form values
+            const sessionSelect = document.getElementById('sessionYear');
+            const customSession = document.getElementById('customSession');
+            const classValue = document.getElementById('classSelect').value;
+            const streamValue = document.getElementById('streamSelect').value;
+            const studentName = document.getElementById('studentName').value;
+            const rollNo = document.getElementById('rollno').value;
+            const schoolNo = document.getElementById('schoolno').value;
+            const centerNo = document.getElementById('centerno').value;
+            const admitCardId = document.getElementById('admitCardId').value;
+            const userAnswer = parseInt(document.getElementById('captchaInput').value);
+
+            // Determine session year
+            let sessionYear;
+            if (sessionSelect.value === 'custom') {
+                sessionYear = customSession.value.trim();
+                if (!validateSession(sessionYear)) {
+                    showError('customSessionError', 'Please enter a valid session in YYYY-YY format');
+                    return;
+                }
+            } else {
+                sessionYear = sessionSelect.value;
+            }
+
+            // Validate captcha
+            if (userAnswer !== captchaAnswer) {
+                showError('captchaError', 'Invalid Security Pin! Please try again.');
+                generateCaptcha();
+                return;
+            }
+
+            // Hide any previous errors
+            hideError('customSessionError');
+            hideError('captchaError');
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+
+            // Simulate server delay
+            setTimeout(() => {
+                // Generate random data
+                const randomData = generateRandomData();
+                const marks = generateMarks(classValue, streamValue);
+                
+                // Update result header
+                const resultClassText = classValue === '10' ? 
+                    'Secondary School Examination (Class X) Result' : 
+                    'Senior School Certificate Examination (Class XII) Result';
+                document.getElementById('resultClass').textContent = `${resultClassText} ${sessionYear.split('-')[1]}`;
+                document.getElementById('resultSession').textContent = `Session: ${sessionYear}`;
+                
+                // Update student details
+                document.getElementById('resultName').textContent = studentName.toUpperCase();
+                document.getElementById('resultFatherName').textContent = randomData.fatherName;
+                document.getElementById('resultMotherName').textContent = randomData.motherName;
+                document.getElementById('resultRoll').textContent = rollNo;
+                document.getElementById('resultSchool').textContent = schoolNo;
+                document.getElementById('resultCenter').textContent = centerNo;
+                document.getElementById('resultStream').textContent = classValue === '10' ? 'General' : streamValue.charAt(0).toUpperCase() + streamValue.slice(1);
+                document.getElementById('resultDOB').textContent = randomData.dob;
+                document.getElementById('resultSchoolName').textContent = randomData.school;
+                
+                // Generate marks table
+                const marksTable = document.getElementById('marksTable');
+                marksTable.innerHTML = `
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>Maximum Marks</th>
+                        <th>Marks Obtained</th>
+                        <th>Grade</th>
+                    </tr>
+                `;
+                
+                let totalMarks = 0;
+                let obtainedMarks = 0;
+                
+                marks.forEach(subject => {
+                    const grade = calculateGrade(subject.marks);
+                    totalMarks += 100;
+                    obtainedMarks += subject.marks;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${subject.code}</td>
+                        <td>${subject.name}</td>
+                        <td>100</td>
+                        <td>${subject.marks}</td>
+                        <td>${grade}</td>
+                    `;
+                    marksTable.appendChild(row);
+                });
+                
+                // Update summary
+                const percentage = ((obtainedMarks / totalMarks) * 100).toFixed(2);
+                document.getElementById('totalMarks').textContent = totalMarks;
+                document.getElementById('obtainedMarks').textContent = obtainedMarks;
+                document.getElementById('resultPercentage').textContent = `${percentage}%`;
+                document.getElementById('resultStatus').textContent = percentage >= 33 ? 'PASS' : 'FAIL';
+                document.getElementById('resultStatus').style.color = percentage >= 33 ? '#28a745' : '#dc3545';
+
+                // Store current result data for PDF generation
+                currentResultData = {
+                    sessionYear: sessionYear,
+                    class: resultClassText,
+                    name: studentName.toUpperCase(),
+                    fatherName: randomData.fatherName,
+                    motherName: randomData.motherName,
+                    rollNo: rollNo,
+                    schoolNo: schoolNo,
+                    centerNo: centerNo,
+                    admitCardId: admitCardId,
+                    stream: classValue === '10' ? 'General' : streamValue.charAt(0).toUpperCase() + streamValue.slice(1),
+                    dob: randomData.dob,
+                    schoolName: randomData.school,
+                    marks: marks,
+                    totalMarks: totalMarks,
+                    obtainedMarks: obtainedMarks,
+                    percentage: percentage,
+                    resultStatus: percentage >= 33 ? 'PASS' : 'FAIL'
+                };
+
+                // Hide loading and show results
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('resultContainer').style.display = 'block';
+                
+                // Scroll to results
+                setTimeout(() => {
+                    document.getElementById('resultContainer').scrollIntoView({ 
+                        behavior: 'smooth' 
+                    });
+                }, 100);
+            }, 1500);
+        }
+
+        // Print result
+        function printResult() {
+            window.print();
+        }
+
+        // Download PDF using html2pdf
+        function downloadPDF() {
+            // Create the PDF content
+            const pdfContent = document.getElementById('pdf-content');
+            
+            // Generate marks table HTML
+            let marksTableHTML = '';
+            currentResultData.marks.forEach(subject => {
+                const grade = calculateGrade(subject.marks);
+                marksTableHTML += `
+                    <tr>
+                        <td>${subject.code}</td>
+                        <td>${subject.name}</td>
+                        <td>100</td>
+                        <td>${subject.marks}</td>
+                        <td>${grade}</td>
+                    </tr>
+                `;
+            });
+            
+            // Set the content for PDF
+            pdfContent.innerHTML = `
+                <div class="pdf-container">
+                    <div class="pdf-header">
+                        <h1>${currentResultData.class} ${currentResultData.sessionYear.split('-')[1]}</h1>
+                        <h2>Central Board of Secondary Education</h2>
+                        <p>Session: ${currentResultData.sessionYear}</p>
+                    </div>
+                    
+                    <div class="pdf-student-info">
+                        <div class="pdf-student-detail">
+                            <p>Name: <strong>${currentResultData.name}</strong></p>
+                            <p>Father's Name: <strong>${currentResultData.fatherName}</strong></p>
+                            <p>Mother's Name: <strong>${currentResultData.motherName}</strong></p>
+                        </div>
+                        <div class="pdf-student-detail">
+                            <p>Roll No: <strong>${currentResultData.rollNo}</strong></p>
+                            <p>School No: <strong>${currentResultData.schoolNo}</strong></p>
+                            <p>Center No: <strong>${currentResultData.centerNo}</strong></p>
+                        </div>
+                        <div class="pdf-student-detail">
+                            <p>Stream: <strong>${currentResultData.stream}</strong></p>
+                            <p>Date of Birth: <strong>${currentResultData.dob}</strong></p>
+                            <p>School: <strong>${currentResultData.schoolName}</strong></p>
+                        </div>
+                    </div>
+                    
+                    <table class="pdf-marks-table">
+                        <tr>
+                            <th>Subject Code</th>
+                            <th>Subject Name</th>
+                            <th>Maximum Marks</th>
+                            <th>Marks Obtained</th>
+                            <th>Grade</th>
+                        </tr>
+                        ${marksTableHTML}
+                    </table>
+                    
+                    <div class="pdf-summary">
+                        <div class="pdf-summary-item">
+                            <div>Total Marks</div>
+                            <div class="pdf-summary-value">${currentResultData.totalMarks}</div>
+                        </div>
+                        <div class="pdf-summary-item">
+                            <div>Marks Obtained</div>
+                            <div class="pdf-summary-value">${currentResultData.obtainedMarks}</div>
+                        </div>
+                        <div class="pdf-summary-item">
+                            <div>Percentage</div>
+                            <div class="pdf-summary-value">${currentResultData.percentage}%</div>
+                        </div>
+                        <div class="pdf-summary-item">
+                            <div>Result</div>
+                            <div class="pdf-summary-value">${currentResultData.resultStatus}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="pdf-note">
+                        * This is a computer generated statement and does not require any signature
+                    </div>
+                </div>
+            `;
+            
+            // Configure PDF options
+            const options = {
+                margin: 10,
+                filename: `CBSE_Result_${currentResultData.rollNo}_${currentResultData.sessionYear}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Generate and download PDF
+            html2pdf().set(options).from(pdfContent).save();
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add form submission handler
+            document.getElementById('resultForm').addEventListener('submit', handleSubmit);
+            
+            // Generate initial captcha
+            generateCaptcha();
+            
+            // Set current year as default in session dropdown
+            const currentYear = new Date().getFullYear();
+            const nextYear = currentYear + 1;
+            const currentSession = `${currentYear}-${nextYear.toString().slice(2)}`;
+            
+            // Find and select the current session in the dropdown
+            const sessionSelect = document.getElementById('sessionYear');
+            for (let i = 0; i < sessionSelect.options.length; i++) {
+                if (sessionSelect.options[i].value === currentSession) {
+                    sessionSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
